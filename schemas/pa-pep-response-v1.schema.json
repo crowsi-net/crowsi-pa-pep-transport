@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://pa-pep-transport/response/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "request_id", "receipt"],
+  "properties": {
+    "schema": { "const": "crowsi://pa-pep-transport/response/v1" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "receipt": { "$ref": "crowsi://control/enforcement-receipt/v2" }
+  }
+}

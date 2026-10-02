@@ -1,51 +1,30 @@
-# Crowsi PA–PEP Transport
+# crowsi-pa-pep-transport
 
-This crate is the composition boundary between the Crowsi Policy
-Administrator (PA) and Enforcement Point (PEP). It implements the PA
-`EnforcementPointV2` port without merging either component's trust boundary.
+Connect a policy administrator to an enforcement point through a validated control exchange.
 
-## Flow
+## What you can do
 
-1. The PA durably reserves and begins one v2 execution lease.
-2. `PepV2Transport` places that lease in the closed request-v1 JSON envelope.
-3. An authenticated `LocalPepWire` carries the bytes to `LocalPepEndpoint`.
-4. The endpoint decodes the PEP's independently released lease type.
-5. The PEP verifies its public PA trust manifest, fences, applies provider CAS,
-   and delegates receipt signing to its external signing port.
-6. The endpoint returns the signed receipt in response-v1 JSON.
-7. The transport enforces exact lease/receipt binding.
-8. The PA verifies the independently pinned receipt key and durably records the
-   receipt.
+- Carry the declared administration/enforcement envelopes.
+- Apply bounded transport checks.
 
-The integration test performs the entire
-`reserve_v2 → begin_execution_v2 → JSON → PEP → JSON → record_receipt_v2`
-sequence. The PA and PEP use their separate Rust wire models, so the test
-detects schema drift that a shared in-memory type would hide.
+## Current scope
 
-## Production boundary
+The deployment supplies peer trust and authorized endpoints. Transport delivery does not grant an operation.
 
-`LocalPepWire` is deliberately transport-agnostic. A production implementation
-must authenticate the local peer, constrain the endpoint path and permissions,
-bound message sizes and deadlines, and treat disconnects as outcome-unknown.
-The provided `LocalPepEndpoint` is an in-process composition adapter; it makes
-no socket, network, provider, or credential calls by itself.
+Package distribution is not activated by this documentation. Use the checked-in source and the declared dependency versions; published availability must be verified separately.
 
-The library contains no private key and no software signer. The PEP's
-`ReceiptSigningPort` remains the only receipt-signing boundary and must
-terminate at an HSM, TPM, or credential broker in production. Test-only
-signing material stays under `tests/`.
+## Getting started
 
-The two transport envelopes are versioned and closed:
+Install Rust 1.97 or newer and make the declared dependencies available. Use the configured private registry when a dependency is not distributed publicly. Run from this repository:
 
-- `crowsi://pa-pep-transport/request/v1`
-- `crowsi://pa-pep-transport/response/v1`
-
-Unknown fields, schema versions, request bindings, malformed payloads, and
-cross-command responses fail closed to PA `PepExecutionUncertainV2` evidence.
-
-## Verification
-
-```bash
-# WONDERLAND_ROOT is the workspace checkout root.
-"$WONDERLAND_ROOT/bin/verify-repositories" --rust --tier standard
+```sh
+cargo test --locked
 ```
+
+## Documentation and source
+
+[Interface reference](docs/interface-reference.md)
+
+[Usage guide](docs/getting-started.md)
+
+[Schemas](schemas) · [Implementation and public interfaces](src) · [Verification cases](tests) · [Contributing](CONTRIBUTING.md) · [Security reporting](SECURITY.md) · [License](LICENSE) · [Attribution notices](NOTICE)
